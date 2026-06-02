@@ -3,7 +3,7 @@ CFLAGS = -Wall -Wextra -Wpedantic -fPIC -std=c11
 LDFLAGS = -shared
 INC = -I./include
 
-.PHONY: all clean shared app run syntax test
+.PHONY: all clean shared app run syntax test py-test
 
 all: shared app
 
@@ -28,6 +28,9 @@ test: build build/test_rect
 
 build/test_rect: tests/test_rect.c build/librect.so
 	$(CC) $(CFLAGS) $(INC) $< -L./build -lrect -Wl,-rpath,./build -o $@
+
+py-test: shared
+	python3 python/test_rect.py
 
 syntax:
 	$(CC) -fsyntax-only $(CFLAGS) $(INC) src/*.c tests/*.c
