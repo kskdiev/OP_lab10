@@ -3,7 +3,7 @@ CFLAGS = -Wall -Wextra -Wpedantic -fPIC -std=c11
 LDFLAGS = -shared
 INC = -I./include
 
-.PHONY: all clean shared app run syntax test py-test
+.PHONY: all clean shared app run syntax test py-test analyze sanitize docs docs-html docs-pdf
 
 all: shared app
 
@@ -35,5 +35,24 @@ py-test: shared
 syntax:
 	$(CC) -fsyntax-only $(CFLAGS) $(INC) src/*.c tests/*.c
 
+analyze: build
+	@mkdir -p reports
+	$(CC) -fanalyzer $(CFLAGS) $(INC) -c src/rect.c > reports/analyzer_report.txt 2>&1 || true
+	@echo "Статический анализ завершен. Отчет в reports/analyzer_report.txt"
+
+sanitize: build
+	@mkdir -p reports
+	$(CC) $(CFLAGS) -fsanitize=address,undefined $(INC) src/rect.c tests/test_rect.c -o build/sanitize_test
+	./build/sanitize_test > reports/sanitize_report.txt 2>&1
+	@echo "Проверка санитайзерами завершена. Отчет в reports/sanitize_report.txt"
+
+docs: docs-html docs-pdf
+
+docs-html: Doxyfile
+	doxygen Doxyfile
+
+docs-pdf: docs-html
+	$(MAKE) -C docs/latex pdf
+
 clean:
-	rm -rf build/ __pycache__/ docs/html/ docs/latex/ reports/* *.so
+	rm -rf build/ __pycache__/ docs/html/ docs/latex/ reports/*.txt *.so

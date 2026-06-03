@@ -4,4 +4,3 @@ build/
 __pycache__/
 docs/html/
 docs/latex/
-reports/*
